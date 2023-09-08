@@ -30,6 +30,8 @@ const Vertex = class Vertex {
       Math.random() * scale
     ]
     this.velocity = [0, 0, 0]
+
+    this.createdAt = Date.now()
   }
 
   accelerate(by){
@@ -60,6 +62,7 @@ const Edge = class Edge {
     edgesFrom.set(a.id, this.id)
     edgesTo.set(b.id, this.id)
 
+    this.createdAt = Date.now()
   }
 }
 
@@ -221,6 +224,21 @@ const Layout = class Layout {
     return e.id
   }
 
+  randomEdge(){
+    let u, v
+    do{
+      v = Math.floor(Math.random() * this.vertices.size)
+      u = Math.floor(Math.random() * this.vertices.size)
+    }while(!this.vertices.has(v) || !this.vertices.has(u))
+
+    let id = undefined
+    if(this.vertices.has(v) && this.vertices.has(u)){
+      id = addEdge(v, u)
+    }
+
+    return id
+  }
+
   removeEdge(id){
     let e = this.edges.get(id)
     let v = this.vertices.get(e.source)
@@ -297,106 +315,7 @@ const Layout = class Layout {
 /*                   "main helpers"                     */
 /* //////////////////////////////////////////////////// */
 
-class MetricsCollector {
-  constructor(numVertices, numEdges){
 
-  }
-
-  /*
-    Collect a sample from a larger population.
-    Returns a set.
-  */
-  sample(all, sampleSize){
-    let s = new Set()
-    do{
-      let o = all.get(Math.floor(Math.random() * all.size))
-      if(o !== undefined) s.add(o)
-    }while(s.size < sampleSize)
-
-    return s
-  }
-
-  /*
-    Collect a sample's mean average position.
-    Returns a vector.
-  */
-  meanPos(sample){
-    let sum = [0,0,0]
-    for(let v of sample.values()){
-      sum = add(sum, v.position)
-    }
-    let result = divideScalar(sum, sample.size)
-    return result
-  }
-
-  /*
-    Collect the maximum position by norm.
-    Returns a scalar.
-  */
-  maxPos(sample){
-    let max = -Infinity
-    for(let v of sample.values()){
-      let n = norm(v.position)
-      if(n > max){
-        max = n
-      }
-    }
-
-    return max
-  }
-
-  /*
-    Collect a sample's minimum position. 
-    Returns a scalar.
-  */
-  minPos(sample){
-    let min = Infinity
-    for(let v of sample.values()){
-      let n = norm(v.position)
-      if(n < min){
-        min = n
-      }
-    }
-
-    return min
-  }
-
-  /*
-    Collect a sample's minimum velocity
-    Returns a scalar
-  */
-  meanVel(sample){
-    let sum = [0, 0, 0]
-    for(let v of sample.values()){
-      sum = add(sum, v.velocity)
-    }
-  
-    let result = divideScalar(sum, sample.size)
-    return result
-  }
-
-  /*
-    Collect a sample's mean distance of connected nodes
-    Returns a scalar
-  */
-  meanDist(sample){
-    let sum = [0, 0, 0]
-    for(let e of sample.values()){
-      sum = add(sum, distance(e.source.position, e.target.position))
-    }
-
-    return divideScalar(sum, sample.size)
-  }
-  
-}
-
-
-
-
-/*
-  An array of metrics, raised per step(), which includes layout().
-*/
-const data = []
 
 /*
   Perform one layout calculation and raise metrics per round,
@@ -405,7 +324,7 @@ const data = []
 const step = function(description, dobj){
   // run and time layout
   let start = new Date()
-  let l = layout()
+  let l = Layout()
   let end = new Date()
   let ms = end - start
 
@@ -437,105 +356,5 @@ const step = function(description, dobj){
   module exports
 */
 module.exports = {
-  vertices, 
-  edges, 
-  addVertex, 
-  addEdge, 
-  removeVertex, 
-  removeEdge,
-  layout,
-  data,
-  step
+  Layout
 }
-
-/* //////////////////////////////////////////////////// */
-/*                        "main"                        */
-/* //////////////////////////////////////////////////// */
-
-/*
-  main program
-*/
-function main(){
-  console.log(`
-  /* //////////////////////////////////////////////////// */
-  /*                                                      */
-  /*                  layout/layout.js                    */
-  /*                          main()                      */
-  /*                                                      */
-  /*                      Josh M. Moore                   */
-  /*                  mooreolith@gmail.com                */
-  /*                                                      */
-  /*                       Jun 22, 2023                   */
-  /*                                                      */
-  /* //////////////////////////////////////////////////// */
-  `)
-
-  /* 
-    1000 vertices
-  */
-  for(let i=0; i<100; i++){
-    addVertex()
-  }
-  console.log('vertices added')
-
-  /*
-    100 edges
-  */
-  for(let i=0; i<100; i++){
-    let u, v
-    do{
-      v = Math.floor(Math.random() * vertices.size)
-      u = Math.floor(Math.random() * vertices.size)
-    }while(!vertices.has(v) || !vertices.has(u))
-
-    if(vertices.has(v) && vertices.has(u)){
-      addEdge(v, u)
-    }
-  }
-  console.log('edges added')
-
-  for(let i=0; i<1000; i++){
-    step("timin'")
-  }
-
-  console.log('layout calls')
-
-  // create the csv text in memory
-  let csv = [
-    '# of vertices', 
-    '# of edges', 
-    'ms for layout',
-    'norm(meanPos(vs))',
-    'norm(meanVel(vs))',
-    'maxPos(vertexSample)', 
-    'minPos(vertexSample)',
-    'f0',
-    'epsR',
-    'K',
-    'd'
-  ].join(',').concat('\n', data.map(row => [
-    row['# of vertices'],
-    row['# of edges'],
-    row['ms for layout'],
-    row['norm(meanPos(vs))'],
-    row['norm(meanVel(vs))'],
-    row['maxPos(vertexSample)'],
-    row['minPos(vertexSample)'],
-    row['f0'],
-    row['epsR'],
-    row['K'],
-    row['d']
-  ].join(',')).join('\n'))
-
-  // write the csv variable to the file system
-  let fs = require('fs')
-  fs.writeFile('metrics.csv', csv, err => {
-    console.log(`File (data.csv) written`)
-    if(err) console.error(err)
-  })
-
-  // console.table(data[data.length-1].layout)
-  return data
-}
-
-if(require.main === module) main()
