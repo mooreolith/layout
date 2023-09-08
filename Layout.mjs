@@ -30,7 +30,6 @@ const Vertex = class Vertex {
       Math.random() * scale
     ]
     this.velocity = [0, 0, 0]
-
     this.createdAt = Date.now()
   }
 
@@ -55,14 +54,14 @@ const Edge = class Edge {
     this.source = a
     this.target = b
 
+    this.createdAt = Date.now()
+
     a.edges.add(this)
     b.edges.add(this)
+  }
 
-    edges.set(this.id, this)
-    edgesFrom.set(a.id, this.id)
-    edgesTo.set(b.id, this.id)
-
-    this.createdAt = Date.now()
+  length(){
+    return distance(a.position, b.position)
   }
 }
 
@@ -164,18 +163,18 @@ const Layout = class Layout {
     /*
       edgeFrom
       I don't yet know how this will come in handy, but I have a feeling
-      it, and its cousin edgesTo could provide speedier access to some
-      of the ancipated implementation efforts.
+      it, and its cousin edgesTo could provide speedier access to the edge
+      objects.
     */
-    this.edgesTo = new Map() // key: from.id, value: e.id
-    this.edgesFrom = new Map() // key: to.id, value: e.id
+    this.edgesTo = new Map() // from.id -> e.id
+    this.edgesFrom = new Map() // to.id -> e.id
 
     /*
       vertices and edges, hold their respective structures for later 
       query or retrieval by element's (edge or vertex) id. 
     */
     this.vertices = new Map()
-    this.edges = new Map()
+    this.edges = new Map() // id -> object
 
     /*
       constants is an object of named constants mainly for use in 
@@ -203,7 +202,7 @@ const Layout = class Layout {
   removeVertex(id){
     let v = this.vertices.get(id)
 
-    for(let eid of v.edges.keys()){
+    for(let eid of v.edges){
       this.removeEdge(eid)
     }
   
@@ -216,24 +215,25 @@ const Layout = class Layout {
     let v = this.vertices.get(a)
     let u = this.vertices.get(b)
   
-    console.assert(v !== undefined)
-    console.assert(u !== undefined)
-  
     let e = new Edge(++this.edgeId, a, b)
   
     return e.id
   }
 
   randomEdge(){
-    let u, v
+    let v, u
     do{
       v = Math.floor(Math.random() * this.vertices.size)
       u = Math.floor(Math.random() * this.vertices.size)
-    }while(!this.vertices.has(v) || !this.vertices.has(u))
+    }while(this.vertices.has(v) && this.vertices.has(u))
+
+    v = this.vertices.get(v)
+    u = this.vertices.get(u)
 
     let id = undefined
     if(this.vertices.has(v) && this.vertices.has(u)){
-      id = addEdge(v, u)
+      let e = new Edge(++this.edgeId, v, u)
+      id = e.id
     }
 
     return id
@@ -271,7 +271,7 @@ const Layout = class Layout {
     }
 
     // calculate edge-wise attraction
-    for(let e of this.edges.values()){
+    for(let e of this.edges){
       let v = this.vertices.get(e.source)
       let u = this.vertices.get(e.target)
 
@@ -310,51 +310,4 @@ const Layout = class Layout {
   }
 }
 
-
-/* //////////////////////////////////////////////////// */
-/*                   "main helpers"                     */
-/* //////////////////////////////////////////////////// */
-
-
-
-/*
-  Perform one layout calculation and raise metrics per round,
-  saving metrics to the end of the data array.
-*/
-const step = function(description, dobj){
-  // run and time layout
-  let start = new Date()
-  let l = Layout()
-  let end = new Date()
-  let ms = end - start
-
-  // sample vertices and edges
-  let sampleSize = 50
-  let vs = sample(vertices, sampleSize)
-  let mps = meanPos(vs)
-  let mpv = meanVel(vs)
-
-  // record metrics
-  data.push({
-    'description': description,
-    'ms for layout': ms,
-    '# of vertices': vertices.size,
-    '# of edges': edges.size,
-    'norm(meanPos(vs))': norm(mps),
-    'norm(meanVel(vs))': norm(mpv),
-    'maxPos(vertexSample)': maxPos(vs),
-    'minPos(vertexSample)': minPos(vs),
-    'layout': l,
-    'f0': constants.f0,
-    'epsR': constants.epsR,
-    'K': constants.K,
-    'd': constants.d
-  })
-}
-
-/*
-  module exports
-*/
-module.exports = {
-  Layout
-}
+export default Layout

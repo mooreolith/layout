@@ -69,3 +69,59 @@ function main(){
 
 if(require !== undefined && require.main === module) 
   main()
+
+
+
+
+
+
+
+
+
+
+
+  edges.set(this.id, this)
+    edgesFrom.set(a.id, this.id)
+    edgesTo.set(b.id, this.id)
+
+
+
+
+
+
+
+
+/*
+  Perform one layout calculation and raise metrics per round,
+  saving metrics to the end of the data array.
+*/
+const step = function(description, dobj){
+  // run and time layout
+  let start = new Date()
+  let l = Layout()
+  let end = new Date()
+  let ms = end - start
+
+  // sample vertices and edges
+  let sampleSize = 50
+  let vs = sample(vertices, sampleSize)
+  let mps = meanPos(vs)
+  let mpv = meanVel(vs)
+
+  // record metrics
+  data.push({
+    'description': description,
+    'ms for layout': ms,
+    '# of vertices': vertices.size,
+    '# of edges': edges.size,
+    'norm(meanPos(vs))': norm(mps),
+    'norm(meanVel(vs))': norm(mpv),
+    'maxPos(vertexSample)': maxPos(vs),
+    'minPos(vertexSample)': minPos(vs),
+    'layout': l,
+    'f0': constants.f0,
+    'epsR': constants.epsR,
+    'K': constants.K,
+    'd': constants.d
+  })
+}

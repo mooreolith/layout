@@ -1,10 +1,9 @@
-const l = require('./Layout.js')
+import Layout from './Layout.mjs'
 
 class MetricsCollector {
   constructor(
     numVertices = 100, 
     numEdges = 100, 
-    iterations = 1000, 
     sampleSize = 50,
     observe = {
       meanPos: false,
@@ -13,8 +12,7 @@ class MetricsCollector {
       meanVel: false,
       meanDist: false,
       meanAge: false
-    }
-  ){
+    }){
     this.sampleSize = sampleSize
     this.observe = observe;
     this.layout = new Layout()
@@ -143,3 +141,9 @@ class MetricsCollector {
     return divideScalar(sum, sample.size)
   }
 }
+
+function makeMetricsCollector(){
+  return new MetricsCollector(...args)
+}
+
+export default MetricsCollector
