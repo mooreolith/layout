@@ -1,4 +1,5 @@
 import Layout from './Layout.mjs'
+import util from './util.mjs'
 
 class MetricsCollector {
   constructor(
@@ -6,12 +7,12 @@ class MetricsCollector {
     numEdges = 100, 
     sampleSize = 50,
     observe = {
-      meanPos: false,
-      minPos: false,
-      maxPos: false,
-      meanVel: false,
-      meanDist: false,
-      meanAge: false
+      vMeanPos: false,
+      vMinPos: false,
+      vMaxPos: false,
+      vMeanVel: false,
+      eMeanDist: false,
+      eMeanAge: false
     }){
     this.sampleSize = sampleSize
     this.observe = observe;
@@ -24,7 +25,8 @@ class MetricsCollector {
 
     for(let i=0; i<numEdges; i++){
       let id = this.layout.randomEdge()
-      this.layout.edges.get(id).age = Date.now()
+      let e = this.layout.edges.get(id)
+      e.createdAt = Date.now()
     }
   }
 
@@ -37,11 +39,22 @@ class MetricsCollector {
         result[option] = this.layout.constants[option]
       }
 
-      let vsSample = MetricsCollector.sample(this.vertices, this.sampleSize)
+      let vsSample = MetricsCollector.sample(this.layout.vertices.values(), this.sampleSize)
+      let esSample = MetricsCollector.sample(this.layout.edges.values(), this.sampleSize)
 
-      for(let item of Object.keys(observe)){
-        if(observe[item]){
-          result[item] = (new Function(samples, `return Layout.${item}(samples)`))()
+      console.log('vss, ess: ', vsSample, esSample)
+
+      for(let item of Object.keys(this.observe)){
+        console.log(item)
+
+        if(this.observe[item]){
+          if(item.startsWith('v')){
+            result[item] = MetricsCollector[item](vsSample)
+          }
+
+          if(item.startsWith('e')){
+            result[item] = MetricsCollector[item](esSample)
+          }
         }
       }
 
@@ -60,25 +73,36 @@ class MetricsCollector {
     Returns a set.
   */
   static sample(all, sampleSize){
-    let s = new Set()
-    do{
-      let o = all.get(Math.floor(Math.random() * all.size))
-      if(o !== undefined) s.add(o)
-    }while(s.size < sampleSize)
+    
 
-    return s
+    let arr = [...all]
+    let r = new Set()
+
+    var chooseRandomSpecimen = function(sample){
+      let candidate
+      do{
+        candidate = all[Math.round(Math.random() * sampleSize)]
+      }while(candidate in r)
+      return candidate
+    }
+
+    while(r.size < sampleSize){
+      r.add(chooseRandomSpecimen())
+    }
+
+    return r
   }
 
   /*
     Collect a sample's mean average position.
     Returns a vector.
   */
-  static meanPos(sample){
+  static vMeanPos(sample){
     let sum = [0,0,0]
-    for(let v of sample.values()){
-      sum = add(sum, v.position)
+    for(let v of sample){
+      sum = util.add(sum, v.position)
     }
-    let result = divideScalar(sum, sample.size)
+    let result = util.divideScalar(sum, sample.size)
     return result
   }
 
@@ -86,10 +110,10 @@ class MetricsCollector {
     Collect the maximum position by norm.
     Returns a scalar.
   */
-  static maxPos(sample){
+  static vMaxPos(sample){
     let max = -Infinity
-    for(let v of sample.values()){
-      let n = norm(v.position)
+    for(let v of sample){
+      let n = util.norm(v.position)
       if(n > max){
         max = n
       }
@@ -102,10 +126,10 @@ class MetricsCollector {
     Collect a sample's minimum position. 
     Returns a scalar.
   */
-  static minPos(sample){
+  static vMinPos(sample){
     let min = Infinity
-    for(let v of sample.values()){
-      let n = norm(v.position)
+    for(let v of sample){
+      let n = util.norm(v.position)
       if(n < min){
         min = n
       }
@@ -118,13 +142,13 @@ class MetricsCollector {
     Collect a sample's minimum velocity
     Returns a scalar
   */
-  static meanVel(sample){
+  static vMeanVel(sample){
     let sum = [0, 0, 0]
-    for(let v of sample.values()){
-      sum = add(sum, v.velocity)
+    for(let v of sample){
+      sum = util.add(sum, v.velocity)
     }
   
-    let result = divideScalar(sum, sample.size)
+    let result = util.divideScalar(sum, sample.size)
     return result
   }
 
@@ -132,18 +156,23 @@ class MetricsCollector {
     Collect a sample's mean distance of connected nodes
     Returns a scalar
   */
-  static meanDist(sample){
+  static eMeanDist(sample){
+    console.log(`sample: ${Array.from(sample)}`)
     let sum = [0, 0, 0]
-    for(let e of sample.values()){
-      sum = add(sum, distance(e.source.position, e.target.position))
+    for(let e of sample){
+      sum = util.add(sum, util.distance(e.source.position, e.target.position))
     }
 
-    return divideScalar(sum, sample.size)
+    return util.divideScalar(sum, sample.size)
   }
-}
 
-function makeMetricsCollector(){
-  return new MetricsCollector(...args)
+  static eMeanAge(sample){
+    let sum = 0.0
+    for(let e of sample){
+      sum += Date.now() - e.createdAt
+    }
+    return sum / sample.size
+  }
 }
 
 export default MetricsCollector

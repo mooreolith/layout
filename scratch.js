@@ -125,3 +125,25 @@ const step = function(description, dobj){
     'd': constants.d
   })
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+if(observe[item]){
+  // Here we just need the sample returned by the static
+  // MetricsCollector.sample function.
+  result[item] = (new Function(samples, `return Layout.${item}(samples)`))(vsSample)
+}

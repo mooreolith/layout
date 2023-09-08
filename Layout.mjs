@@ -10,6 +10,8 @@
 /*                                                      */
 /* //////////////////////////////////////////////////// */
 
+import util from './util.mjs'
+
 /*
   scale is a factor by which random starting points are multiplied.
 */
@@ -34,12 +36,12 @@ const Vertex = class Vertex {
   }
 
   accelerate(by){
-    this.velocity = add(this.velocity, by)
+    this.velocity = util.add(this.velocity, by)
   }
 
   move(){
-    let friction = multiplyScalar(this.velocity, constants.d)
-    this.position = add(this.position, subtract(this.velocity, friction))
+    let friction = util.multiplyScalar(this.velocity, constants.d)
+    this.position = util.add(this.position, util.subtract(this.velocity, friction))
   }
 }
 
@@ -61,91 +63,11 @@ const Edge = class Edge {
   }
 
   length(){
-    return distance(a.position, b.position)
+    return util.distance(a.position, b.position)
   }
 }
 
-/*
-  Returns a vector representing the sum of vectors a and b
-*/
-const add = function(a, b){
-  console.assert(a !== undefined)
-  console.assert(b !== undefined)
 
-  return [
-    a[0] + b[0], 
-    a[1] + b[1],
-    a[2] + b[2]
-  ]
-}
-
-/*
-  Returns a vector representing the subtraction of b from a
-*/
-const subtract = function(a, b){
-  return [
-    a[0] - b[0],
-    a[1] - b[1],
-    a[2] - b[2]
-  ]
-}
-
-/*
-  Returns a scalar representing the dot product of a and b
-*/
-const dot = function(a, b){
-  return (
-    (a[0] * b[0]) + 
-    (a[1] * b[1]) + 
-    (a[2] * b[2])
-  )
-}
-
-/*
-  Returns a vector representing the cross product of a and b
-*/
-const cross = function(a, b){
-  return [
-    (a[1] * b[2]) - (b[1] * a[2]),
-    (b[0] * a[2]) - (a[0] * b[2]),
-    (a[0] * b[1]) - (b[0] * a[1])
-  ]
-}
-
-/*
-  Returns the normalized vector vec
-*/
-const norm = function(vec){
-  return Math.abs(vec[0]) +
-    Math.abs(vec[1]) +
-    Math.abs(vec[2])
-}
-
-/*
-  Returns a vector representing vector vec divided by scalar s
-*/
-const divideScalar = function(vec, s){
-  return [
-    vec[0] / s,
-    vec[1] / s,
-    vec[2] / s
-  ]
-}
-
-/*
-  Returns a vector representing vector vec multiplied by scalar s
-*/
-const multiplyScalar = function(vec, s){
-  return [
-    vec[0] * s,
-    vec[1] * s,
-    vec[2] * s
-  ]
-}
-
-const distance = function(a, b){
-  return Math.sqrt(((b[0]+ a[0])**2) + ((b[1]+ a[1])**2) + ((b[2]+ a[2])**2))
-}
 
 
 const Layout = class Layout {
@@ -159,15 +81,6 @@ const Layout = class Layout {
     */
     this.vertexId = 0
     this.edgeId = 0
-
-    /*
-      edgeFrom
-      I don't yet know how this will come in handy, but I have a feeling
-      it, and its cousin edgesTo could provide speedier access to the edge
-      objects.
-    */
-    this.edgesTo = new Map() // from.id -> e.id
-    this.edgesFrom = new Map() // to.id -> e.id
 
     /*
       vertices and edges, hold their respective structures for later 
@@ -225,27 +138,24 @@ const Layout = class Layout {
     do{
       v = Math.floor(Math.random() * this.vertices.size)
       u = Math.floor(Math.random() * this.vertices.size)
-    }while(this.vertices.has(v) && this.vertices.has(u))
+    }while(!this.vertices.has(v) || !this.vertices.has(u))
 
     v = this.vertices.get(v)
     u = this.vertices.get(u)
 
-    let id = undefined
-    if(this.vertices.has(v) && this.vertices.has(u)){
-      let e = new Edge(++this.edgeId, v, u)
-      id = e.id
-    }
+    let e = new Edge(++this.edgeId, v, u)
+    this.edges.set(e.id, e)
 
-    return id
+    v.edges.add(e)
+    u.edges.add(e)
+    return e.id
   }
 
   removeEdge(id){
     let e = this.edges.get(id)
     let v = this.vertices.get(e.source)
     let u = this.vertices.get(e.target)
-  
-    this.edgesFrom.delete(e.source)
-    this.edgesTo.delete(e.target)
+
     v.edges.delete(e)
     u.edges.delete(e)
   
@@ -263,7 +173,7 @@ const Layout = class Layout {
       
       for(let u of this.vertices.values()){
         if(v.id !== u.id){
-          result = add(result, this.repulsion(v.position, u.position))
+          result = util.add(result, this.repulsion(v.position, u.position))
         }
       }
 
@@ -277,7 +187,7 @@ const Layout = class Layout {
 
       let a = this.attraction(v.position, u.position)
       v.accelerate(a)
-      u.accelerate(multiplyScalar(a, -1))
+      u.accelerate(util.multiplyScalar(a, -1))
     }
 
     for(let v of this.vertices.values()) v.move()
@@ -290,14 +200,14 @@ const Layout = class Layout {
   */
   repulsion(posA, posB){
     let dividend = this.constants.f0
-    let divisor = (this.constants.epsR + norm(subtract(posA, posB))) ** 2
+    let divisor = (this.constants.epsR + util.norm(util.subtract(posA, posB))) ** 2
     let termOne = dividend / divisor
 
-    let dividend2 = subtract(posA, posB)
-    let divisor2 = norm(subtract(posA, posB))
-    let termTwo = divideScalar(dividend2, divisor2)
+    let dividend2 = util.subtract(posA, posB)
+    let divisor2 = util.norm(util.subtract(posA, posB))
+    let termTwo = util.divideScalar(dividend2, divisor2)
 
-    let result = multiplyScalar(termTwo, termOne)
+    let result = util.multiplyScalar(termTwo, termOne)
     return result
   }
 
@@ -306,7 +216,7 @@ const Layout = class Layout {
     attraction force between two objects
   */
   attraction(posA, posB){
-    return multiplyScalar(subtract(posA, posB), -this.constants.K)
+    return util.multiplyScalar(util.subtract(posA, posB), -this.constants.K)
   }
 }
 
