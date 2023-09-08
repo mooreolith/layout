@@ -9,5 +9,4 @@ const mc = new MetricsCollector(10, 10, 5, {
   eMeanAge: true
 })
 
-console.log(mc)
 mc.iterate()

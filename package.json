@@ -4,9 +4,8 @@
   "description": "dynamic layout module",
   "main": "index.js",
   "scripts": {
-    "run": "node layout.js",
-    "tweak": "node tweak.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "run": "node index.mjs",
+    "test": "mocha"
   },
   "keywords": [
     "dynamic",
@@ -16,6 +15,7 @@
   "author": "Josh M. Moore <mooreolith@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "@tensorflow/tfjs": "^1.7.4"
+    "@tensorflow/tfjs": "^4.10.0",
+    "mocha": "^10.2.0"
   }
 }

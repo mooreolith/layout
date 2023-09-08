@@ -39,14 +39,10 @@ class MetricsCollector {
         result[option] = this.layout.constants[option]
       }
 
-      let vsSample = MetricsCollector.sample(this.layout.vertices.values(), this.sampleSize)
-      let esSample = MetricsCollector.sample(this.layout.edges.values(), this.sampleSize)
-
-      console.log('vss, ess: ', vsSample, esSample)
+      let vsSample = MetricsCollector.sample(new Set(this.layout.vertices.values()), this.sampleSize)
+      let esSample = MetricsCollector.sample(new Set(this.layout.edges.values()), this.sampleSize)
 
       for(let item of Object.keys(this.observe)){
-        console.log(item)
-
         if(this.observe[item]){
           if(item.startsWith('v')){
             result[item] = MetricsCollector[item](vsSample)
@@ -66,6 +62,8 @@ class MetricsCollector {
 
       results.push(result)
     }
+
+    return results
   }
 
   /*
@@ -73,21 +71,12 @@ class MetricsCollector {
     Returns a set.
   */
   static sample(all, sampleSize){
-    
-
     let arr = [...all]
     let r = new Set()
 
-    var chooseRandomSpecimen = function(sample){
-      let candidate
-      do{
-        candidate = all[Math.round(Math.random() * sampleSize)]
-      }while(candidate in r)
-      return candidate
-    }
-
     while(r.size < sampleSize){
-      r.add(chooseRandomSpecimen())
+      let candidate = arr[Math.round(Math.random() * arr.length)]
+      if(candidate !== undefined && !r.has(candidate)) r.add(candidate)
     }
 
     return r
@@ -157,7 +146,6 @@ class MetricsCollector {
     Returns a scalar
   */
   static eMeanDist(sample){
-    console.log(`sample: ${Array.from(sample)}`)
     let sum = [0, 0, 0]
     for(let e of sample){
       sum = util.add(sum, util.distance(e.source.position, e.target.position))

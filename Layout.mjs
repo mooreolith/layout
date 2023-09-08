@@ -23,7 +23,8 @@ let scale = 3
 */
 
 const Vertex = class Vertex {
-  constructor(vertexId){
+  constructor(layout, vertexId){
+    this.layout = layout
     this.id = vertexId
     this.edges = new Set()
     this.position = [
@@ -40,7 +41,7 @@ const Vertex = class Vertex {
   }
 
   move(){
-    let friction = util.multiplyScalar(this.velocity, constants.d)
+    let friction = util.multiplyScalar(this.velocity, this.layout.constants.d)
     this.position = util.add(this.position, util.subtract(this.velocity, friction))
   }
 }
@@ -51,7 +52,8 @@ const Vertex = class Vertex {
 */
 
 const Edge = class Edge {
-  constructor(edgeId, a, b){
+  constructor(layout, edgeId, a, b){
+    this.layout = layout
     this.id = edgeId
     this.source = a
     this.target = b
@@ -66,9 +68,6 @@ const Edge = class Edge {
     return util.distance(a.position, b.position)
   }
 }
-
-
-
 
 const Layout = class Layout {
   constructor(){
@@ -106,7 +105,7 @@ const Layout = class Layout {
   }
 
   addVertex(){
-    let w = new Vertex(++this.vertexId)
+    let w = new Vertex(this, ++this.vertexId)
     this.vertices.set(w.id, w)
   
     return w.id
@@ -123,12 +122,15 @@ const Layout = class Layout {
   }
 
   addEdge(a, b){
-    if(!this.vertices.has(a) || !this.vertices.has(b)) return
-
+    // convert ids to vertices
     let v = this.vertices.get(a)
     let u = this.vertices.get(b)
-  
-    let e = new Edge(++this.edgeId, a, b)
+
+    let e = new Edge(this, ++this.edgeId, v, u)
+    this.edges.set(e.id, e)
+
+    v.edges.add(e)
+    u.edges.add(e)
   
     return e.id
   }
@@ -143,7 +145,7 @@ const Layout = class Layout {
     v = this.vertices.get(v)
     u = this.vertices.get(u)
 
-    let e = new Edge(++this.edgeId, v, u)
+    let e = new Edge(this, ++this.edgeId, v, u)
     this.edges.set(e.id, e)
 
     v.edges.add(e)
@@ -153,8 +155,9 @@ const Layout = class Layout {
 
   removeEdge(id){
     let e = this.edges.get(id)
-    let v = this.vertices.get(e.source)
-    let u = this.vertices.get(e.target)
+
+    let v = e.source
+    let u = e.target
 
     v.edges.delete(e)
     u.edges.delete(e)
@@ -181,13 +184,10 @@ const Layout = class Layout {
     }
 
     // calculate edge-wise attraction
-    for(let e of this.edges){
-      let v = this.vertices.get(e.source)
-      let u = this.vertices.get(e.target)
-
-      let a = this.attraction(v.position, u.position)
-      v.accelerate(a)
-      u.accelerate(util.multiplyScalar(a, -1))
+    for(let e of this.edges.values()){
+      let a = this.attraction(e.source.position, e.target.position)
+      e.source.accelerate(a)
+      e.target.accelerate(util.multiplyScalar(a, -1))
     }
 
     for(let v of this.vertices.values()) v.move()
