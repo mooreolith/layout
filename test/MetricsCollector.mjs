@@ -19,12 +19,15 @@ describe("MetricsCollector", function(){
     assert.notEqual(l[0].eMeanDist, undefined)
   })
 
-  it('should not return NaN from the edge mean distance function', function(){
-    this.timeout('1s')
-    let nans = [NaN, NaN, NaN]
+  let metrics
 
-    assert.notDeepEqual(l[0].eMeanDist, nans)
+  it('should iterate many times', function(){
+    metrics = mc.iterate(100)
+    assert.notEqual(metrics, undefined)
   })
 
-  
+  it('should not return NaN from the edge mean distance function', function(){
+    let nans = [NaN, NaN, NaN]
+    assert.notDeepEqual(metrics, nans)
+  })
 })

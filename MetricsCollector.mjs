@@ -44,12 +44,13 @@ class MetricsCollector {
 
       for(let item of Object.keys(this.observe)){
         if(this.observe[item]){
-          if(item.startsWith('v')){
-            result[item] = MetricsCollector[item](vsSample)
-          }
-
-          if(item.startsWith('e')){
-            result[item] = MetricsCollector[item](esSample)
+          switch(item.at(0)){
+            case 'v':
+              result[item] = MetricsCollector[item](vsSample)
+            break
+            case 'e': 
+              result[item] = MetricsCollector[item](esSample)
+            break
           }
         }
       }
