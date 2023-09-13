@@ -1,4 +1,4 @@
-import MetricsCollector from '../MetricsCollector.mjs'
+import MetricsCollector from '../src/MetricsCollector.mjs'
 import assert from 'assert'
 
 describe("MetricsCollector", function(){
