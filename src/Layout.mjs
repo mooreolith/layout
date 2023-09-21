@@ -1,14 +1,11 @@
-/* //////////////////////////////////////////////////// */
-/*                                                      */
-/*                     layout/layout.js                 */
-/*                         main()                       */
-/*                                                      */
-/*                      Josh M. Moore                   */
-/*                  mooreolith@gmail.com                */
-/*                                                      */
-/*                       Jun 22, 2023                   */
-/*                                                      */
-/* //////////////////////////////////////////////////// */
+//
+// layout/layout.js
+// Implemented from Todd Veldhuizen 2007: Dynamic Multilevel Graph Visualization
+// (just the single level dynamics for now)
+// 
+// Josh M. Moore
+// mooreolith@gmail.com
+// June 22nd, 2023
 
 import util from './util.mjs'
 

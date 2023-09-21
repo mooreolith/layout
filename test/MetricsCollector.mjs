@@ -6,7 +6,7 @@ describe("MetricsCollector", function(){
     eMeanDist: true
   })
 
-  it('should be instantiatable', function(){
+  it('should instantiate', function(){
     assert.notEqual(mc, undefined)
   })
 
