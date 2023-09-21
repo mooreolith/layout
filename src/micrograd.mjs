@@ -77,6 +77,7 @@ class Value {
     }
     
     div(other){
+        if(!(other instanceof Value)) other = new Value(other)
         return this.mul(other.pow(-1))
     }
     
