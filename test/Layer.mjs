@@ -1,6 +1,5 @@
-import Micrograd from '../src/micrograd.mjs'
 import assert from 'assert'
-const Layer = Micrograd.Layer
+import Layer from '../src/Layer.mjs'
 
 
 describe("Layer", function(){

@@ -1,7 +1,5 @@
-import Micrograd from '../src/micrograd.mjs'
 import assert from 'assert'
-const Value = Micrograd.Value
-
+import Value from '../src/Value.mjs'
 
 describe("Value", function(){
   let value = new Value(0)

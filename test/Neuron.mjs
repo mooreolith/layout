@@ -1,6 +1,5 @@
-import Micrograd from '../src/micrograd.mjs'
 import assert from 'assert'
-const Neuron = Micrograd.Neuron
+import Neuron from '../src/Neuron.mjs'
 
 
 describe("Neuron", function(){
