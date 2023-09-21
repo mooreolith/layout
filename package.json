@@ -15,7 +15,6 @@
   "author": "Josh M. Moore <mooreolith@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "@tensorflow/tfjs": "^4.10.0",
     "mocha": "^10.2.0"
   }
 }
