@@ -11,6 +11,7 @@ describe("MLP", function(){
   it('should eval', function(){
     let r = model.eval(2)
     assert.notEqual(r.data, undefined)
+    assert.notEqual(r.data, NaN)
   })
 
   it('should list parameters', function(){

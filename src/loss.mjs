@@ -1,55 +1,39 @@
 import Value from './Value.mjs'
 
-function loss(model, X, y){
-  let Xb = X
-  let yb = y
-  
-  let inputs = [Xb.map(xrow => xrow.map(x => new Value(x)))]
-  
+function loss(model, Xb, yb){
+  let inputs = Xb.map(input => new Value(input))
+
   // forward the model to get scores
-  let scores = []
-  for(let input of inputs){
-      scores.push(model.eval(input))
-  }
-  
-  // svm max-margin loss
-  let losses = []
-  for(let i=0; i<yb.length; i++){
-      let yi = new Value(yb[i])
-      let scorei = new Value(scores[i])
-      
-      losses.push(yi.neg().mul(scorei).add(1).relu())
-  }
-  let data_loss = new Value(0.0)
-  for(let l of losses){
-    data_loss.add(l)
-  }
-  data_loss = data_loss.mul(new Value(1.0).div(losses.length))
-  
-  // L2 regularization
+  let scores = inputs.map(input => model.eval(input))
+
+  // svm "max-margin" loss
+  let losses = yb.map((yi, i) => {
+    let scorei = scores[i]
+    return new Value(yi).neg().mul(scorei).add(1).relu()
+  })
+  let data_loss = losses
+    .reduce((a, sum) => sum.add(a), 0)
+    .mul(new Value(losses.length).pow(-1))
   let alpha = new Value(1e-4)
-  let reg_loss = new Value(0.0)
-  for(let p of model.parameters()){
-    reg_loss.add(new Value(p).mul(p))
-  }
+  let reg_loss = alpha * 
+    model.parameters()
+    .map(p => p.data)
+    .reduce((a, sum) => sum + (a * a))
+  let total_loss = data_loss + reg_loss
 
-  let total_loss = data_loss.add(reg_loss)
-  
-  // accuracy
-  let accuracy = []
-  for(let i=0; i<yb.length; i++){
-      let yi = yb[i]
-      let scorei = scores[i]
-      
-      accuracy.push((yi > 0) == (scorei > 0) ? new Value(1.0) : new Value(0.0))
-  }
-  
-  let accSum = new Value(0.0)
-  for(let acc of accuracy){
-    accSum.add(acc)
-  }
+  let accuracy = yb.map((a, i) => {
+    let yi = a
+    let scorei = scores[i]
 
-  return [total_loss, accSum.div(accuracy.length)]
+    return yi > 0 == scorei.data > 0
+  })
+
+  return [
+    total_loss, 
+    accuracy
+      .map(a => a.data)
+      .reduce((a, sum) => sum + a, 0)
+  ]
 }
 
 export default loss
