@@ -1,6 +1,10 @@
+import Value from './Value.mjs'
+
 function loss(model, X, y){
   let Xb = X
   let yb = y
+
+  console.log(X)
   
   let inputs = [Xb.map(xrow => xrow.map(x => new Value(x)))]
   
@@ -18,11 +22,19 @@ function loss(model, X, y){
       
       losses.push(yi.neg().mul(scorei).add(1).relu())
   }
-  let data_loss = losses.reduce((loss, sum) => sum.add(loss), new Value(0.0))
+  let data_loss = new Value(0.0)
+  for(let l of losses){
+    data_loss.add(l)
+  }
+  data_loss = data_loss.mul(new Value(1.0).div(losses.length))
   
   // L2 regularization
   let alpha = new Value(1e-4)
-  let reg_loss = alpha.mul(model.parameters().reduce((p, sum) => sum.add(p.mul(p)), new Value(0.0)))
+  let reg_loss = new Value(0.0)
+  for(let p of model.parameters()){
+    reg_loss.add(new Value(p).mul(p))
+  }
+
   let total_loss = data_loss.add(reg_loss)
   
   // accuracy
@@ -31,16 +43,15 @@ function loss(model, X, y){
       let yi = yb[i]
       let scorei = scores[i]
       
-      accuracy.push((yi.data > 0) == (scorei.data > 0) ? new Value(1.0) : new Value(0.0))
+      accuracy.push((yi > 0) == (scorei > 0) ? new Value(1.0) : new Value(0.0))
   }
   
-  
-  let accSum = new Value(0)
-  console.log(accSum)
-  //    let accSum = accuracy.reduce((acc, sum) => sum.add(acc), new Value(0))
+  let accSum = new Value(0.0)
+  for(let acc of accuracy){
+    accSum.add(acc)
+  }
 
-  // return [total_loss, accSum.div(accuracy.length)]
-  return [total_loss]
+  return [total_loss, accSum.div(accuracy.length)]
 }
 
 export default loss

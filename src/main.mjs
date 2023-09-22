@@ -2,7 +2,7 @@ import Value from './Value.mjs'
 import Neuron from './Neuron.mjs'
 import Layer from './Layer.mjs'
 import MLP from './MultilayerPerceptron.mjs'
-
+import loss from './loss.mjs'
 
 function main(){
   let xs = [
@@ -15,18 +15,20 @@ function main(){
 
   let model = new MLP(3, [4, 4, 1])
 
-  let value = new Value(0.0).add(new Value(1.0))
-  // console.log(value)
+  let [total_loss, acc] = loss(model, xs, ys)
 
-  let neuron = new Neuron(4)
-  // console.log(neuron)
+  for(let k=0; k<100; k++){
+    let [total_loss, acc] = loss(model, xs, ys)
 
-  let layer = new Layer(3, [4], true)
-  // console.log(layer)
+    // backward
+    model.zero_grad()
+    total_loss.backward()
 
-  let mlp = new MLP(3, [4, 4, 1])
-  
-  console.log(mlp.toString())
+    // update
+    learning_rate = 1.0 - 0.9 * k / 100
+    for(let p of model.parameters()) p.data -= learning_rate * p.grad
+    if(k % 1 == 0) console.log(`step ${k} loss {total_loss.data}, accuracy ${acc*100}%`)
+  }
 }
 
-export default main
+main()

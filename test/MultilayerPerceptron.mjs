@@ -7,4 +7,16 @@ describe("MLP", function(){
   it('should instantiate', function(){
     assert.notEqual(model, undefined)
   })
+
+  it('should eval', function(){
+    let r = model.eval(2)
+    assert.notEqual(r.data, undefined)
+  })
+
+  it('should list parameters', function(){
+    let p = model.parameters()
+
+    if(undefined in p) assert.fail('undefined parameter')
+    if(NaN in p) assert.fail('non number parameter')
+  })
 })
