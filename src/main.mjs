@@ -15,8 +15,6 @@ function main(){
 
   let model = new MLP(3, [4, 4, 1])
 
-  let [total_loss, acc] = loss(model, xs, ys)
-
   for(let k=0; k<100; k++){
     let [total_loss, acc] = loss(model, xs, ys)
 

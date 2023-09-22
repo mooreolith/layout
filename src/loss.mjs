@@ -3,8 +3,6 @@ import Value from './Value.mjs'
 function loss(model, X, y){
   let Xb = X
   let yb = y
-
-  console.log(X)
   
   let inputs = [Xb.map(xrow => xrow.map(x => new Value(x)))]
   
