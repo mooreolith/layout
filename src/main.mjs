@@ -23,9 +23,9 @@ function main(){
     total_loss.backward()
 
     // update
-    learning_rate = 1.0 - 0.9 * k / 100
+    let learning_rate = 1.0 - 0.9 * k / 100
     for(let p of model.parameters()) p.data -= learning_rate * p.grad
-    if(k % 1 == 0) console.log(`step ${k} loss {total_loss.data}, accuracy ${acc*100}%`)
+    if(k % 1 == 0) console.log(`step ${k} loss ${total_loss.data}, accuracy ${acc*100}%`)
   }
 }
 
