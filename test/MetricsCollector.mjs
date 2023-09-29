@@ -8,6 +8,7 @@ describe("MetricsCollector", function(){
 
   it('should instantiate', function(){
     assert.notEqual(mc, undefined)
+    assert.equal(mc instanceof MetricsCollector, true)
   })
 
   let l

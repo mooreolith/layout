@@ -1,10 +1,12 @@
-import Value from './Value.mjs'
-import Neuron from './Neuron.mjs'
-import Layer from './Layer.mjs'
 import MLP from './MultilayerPerceptron.mjs'
 import loss from './loss.mjs'
 
 function main(){
+  console.log(`layout/src/main.mjs
+mooreolith@gmail.com
+September 25 2023
+`)
+
   let xs = [
       [2.0, 3.0, -1.0],
       [3.0, -1.0, 0.5],
