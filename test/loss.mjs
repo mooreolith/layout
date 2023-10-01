@@ -1,6 +1,6 @@
 import assert from 'assert'
-import loss from '../src/loss.mjs'
-import MLP from '../src/MultilayerPerceptron.mjs'
+import loss from '../src/micrograd.js/loss.mjs'
+import MLP from '../src/micrograd.js/MultilayerPerceptron.mjs'
 
 describe('loss function', function(){
   let xs = [

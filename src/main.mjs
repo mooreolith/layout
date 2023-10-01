@@ -1,5 +1,5 @@
-import MLP from './MultilayerPerceptron.mjs'
-import loss from './loss.mjs'
+import MLP from './micrograd.js/MultilayerPerceptron.mjs'
+import loss from './micrograd.js/loss.mjs'
 
 function main(){
   console.log(`layout/src/main.mjs

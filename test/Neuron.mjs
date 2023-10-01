@@ -1,5 +1,5 @@
 import assert from 'assert'
-import Neuron from '../src/Neuron.mjs'
+import Neuron from '../src/micrograd.js/Neuron.mjs'
 
 
 describe("Neuron", function(){

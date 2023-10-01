@@ -1,5 +1,5 @@
 import assert from 'assert'
-import Layer from '../src/Layer.mjs'
+import Layer from '../src/micrograd.js/Layer.mjs'
 
 
 describe("Layer", function(){

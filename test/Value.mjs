@@ -1,5 +1,5 @@
 import assert from 'assert'
-import Value from '../src/Value.mjs'
+import Value from '../src/micrograd.js/Value.mjs'
 
 describe("Value", function(){
   let value = new Value(0)
