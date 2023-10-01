@@ -1,4 +1,4 @@
-import Layout from '../src/micrograd.js/Layout.mjs'
+import Layout from '../src/Layout.mjs'
 import assert from 'assert'
 
 describe("Layout", function(){
